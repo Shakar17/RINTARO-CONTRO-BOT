@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const dns = require('node:dns');
 const path = require('node:path');
 const fs = require('node:fs');
 const { spawn } = require('node:child_process');
@@ -21,6 +22,7 @@ const {
   joinVoiceChannel,
 } = require('@discordjs/voice');
 const rootDir = __dirname;
+dns.setDefaultResultOrder('ipv4first');
 const audioDir = path.join(rootDir, 'audio');
 const port = Number(process.env.PORT) || 10000;
 const adminKey = process.env.WEB_ADMIN_KEY;
@@ -41,6 +43,16 @@ function configuredBots() {
     token: process.env[`DISCORD_TOKEN_${index + 1}`],
     status: process.env[`DISCORD_TOKEN_${index + 1}`] && !process.env[`DISCORD_TOKEN_${index + 1}`].startsWith('replace-with-') ? 'starting' : 'missing-token',
   }));
+}
+
+async function validateDiscordToken(token) {
+  const response = await fetch('https://discord.com/api/v10/users/@me', {
+    headers: { Authorization: `Bot ${token}` },
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) {
+    throw new Error(`Discord API rejected the token with HTTP ${response.status}.`);
+  }
 }
 
 const sessions = new Map();
@@ -416,9 +428,9 @@ function attachBot(bot) {
   });
 
   const loginTimeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Discord login timed out after 30 seconds. Check Render outbound network access.')), 30_000);
+    setTimeout(() => reject(new Error('Discord gateway login timed out after 30 seconds. Render cannot complete the WebSocket connection to Discord.')), 30_000);
   });
-  Promise.race([client.login(bot.token.trim()), loginTimeout]).catch((error) => {
+  Promise.race([validateDiscordToken(bot.token.trim()).then(() => client.login(bot.token.trim())), loginTimeout]).catch((error) => {
     botState.status = 'error';
     botState.statusMessage = error.code === 4004 ? 'Invalid token' : error.message;
     client.destroy();
