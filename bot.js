@@ -390,6 +390,18 @@ function attachBot(bot) {
     addLog('error', `Bot ${bot.number} Discord gateway error: ${error.message}. Enable Message Content Intent for this bot if the error mentions privileged intents.`);
   });
 
+  client.on('shardReady', (shardId) => {
+    addLog('info', `Bot ${bot.number} Discord gateway shard ${shardId} is ready.`);
+  });
+
+  client.on('shardReconnecting', (shardId) => {
+    addLog('info', `Bot ${bot.number} Discord gateway shard ${shardId} is reconnecting.`);
+  });
+
+  client.on('shardDisconnect', (closeEvent, shardId) => {
+    addLog('error', `Bot ${bot.number} Discord gateway shard ${shardId} disconnected: ${closeEvent.code} ${closeEvent.reason || 'no reason'}.`);
+  });
+
   client.once('ready', (readyClient) => {
     botState.status = 'online';
     botState.statusMessage = 'Connected to Discord';
