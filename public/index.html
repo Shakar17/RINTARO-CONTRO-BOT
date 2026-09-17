@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Voice Control</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="loginScreen" class="screen active">
+      <div class="login-card">
+        <div class="eyebrow">WEB VOICE CONTROL</div>
+        <h1>Enter the control room.</h1>
+        <p>Use the private dashboard key you configured as <strong>WEB_ADMIN_KEY</strong>.</p>
+
+        <label class="field-label" for="adminKey">Dashboard key</label>
+        <input id="adminKey" type="password" placeholder="Paste your private key" />
+
+        <button id="openDashboardBtn" class="primary-btn">Open dashboard</button>
+      </div>
+    </div>
+
+    <div id="dashboardScreen" class="screen">
+      <div class="dashboard-shell">
+        <section class="panel fleet-panel">
+          <div class="panel-header">
+            <h2>Bot fleet</h2>
+            <button id="refreshBotsBtn" class="small-btn">Refresh</button>
+          </div>
+          <div id="botList" class="bot-list"></div>
+        </section>
+
+        <section class="panel control-panel">
+          <div class="panel-header">
+            <h2>Room control</h2>
+            <button id="logoutBtn" class="text-btn">Log out</button>
+          </div>
+
+          <div class="controls-grid">
+            <div class="form-group">
+              <label>Server</label>
+              <select id="serverSelect">
+                <option>Choose a server</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Voice channel</label>
+              <select id="channelSelect">
+                <option>Choose a channel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="joinAllBtn" class="primary-btn success">Join all bots</button>
+            <button id="stopAllBtn" class="primary-btn warning">Stop all audio</button>
+            <button id="leaveAllBtn" class="primary-btn danger">Leave all bots</button>
+          </div>
+
+          <p class="helper-text">The bots need View Channel, Connect, and Speak permissions.</p>
+        </section>
+
+        <section class="panel audio-panel">
+          <div class="panel-header audio-header">
+            <div class="toggle-block">
+              <label class="checkbox-label">
+                <input id="loopMode" type="checkbox" />
+                <span>Loop mode</span>
+              </label>
+            </div>
+
+            <div class="volume-block">
+              <label for="volumeSlider">Volume</label>
+              <input id="volumeSlider" type="range" min="0" max="100" value="100" />
+              <span id="volumeValue">100%</span>
+            </div>
+
+            <button id="clearLibraryBtn" class="small-btn danger">Clear library</button>
+          </div>
+
+          <div class="audio-dropzone">
+            <input id="audioFileInput" type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.webm" />
+            <button id="uploadAudioBtn" class="primary-btn success upload-btn">Upload audio</button>
+          </div>
+
+          <div id="audioLibrary" class="audio-library"></div>
+        </section>
+
+        <section class="panel log-panel">
+          <div class="panel-header">
+            <h2>Activity log</h2>
+            <span class="muted">Latest events</span>
+          </div>
+          <pre id="logOutput" class="log-output"></pre>
+        </section>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
