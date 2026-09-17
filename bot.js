@@ -384,6 +384,10 @@ function attachBot(bot) {
     addLog('error', `Bot ${bot.number} Discord client error: ${error.message}.`);
   });
 
+  client.on('shardError', (error) => {
+    addLog('error', `Bot ${bot.number} Discord gateway error: ${error.message}. Enable Message Content Intent for this bot if the error mentions privileged intents.`);
+  });
+
   client.once('ready', (readyClient) => {
     botState.status = 'online';
     botState.statusMessage = 'Connected to Discord';
