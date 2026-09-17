@@ -63,7 +63,7 @@ function scheduleRefresh() {
   if (state.timer) clearInterval(state.timer);
   state.timer = setInterval(() => {
     if (state.key) refreshDashboard();
-  }, 5000);
+  }, 1000);
 }
 
 function renderBots(bots) {
