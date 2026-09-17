@@ -45,16 +45,6 @@ function configuredBots() {
   }));
 }
 
-async function validateDiscordToken(token) {
-  const response = await fetch('https://discord.com/api/v10/users/@me', {
-    headers: { Authorization: `Bot ${token}` },
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
-    throw new Error(`Discord API rejected the token with HTTP ${response.status}.`);
-  }
-}
-
 const sessions = new Map();
 const desiredChannels = new Map();
 const reconnectTimers = new Map();
@@ -430,7 +420,7 @@ function attachBot(bot) {
   const loginTimeout = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('Discord gateway login timed out after 30 seconds. Render cannot complete the WebSocket connection to Discord.')), 30_000);
   });
-  Promise.race([validateDiscordToken(bot.token.trim()).then(() => client.login(bot.token.trim())), loginTimeout]).catch((error) => {
+  Promise.race([client.login(bot.token.trim()), loginTimeout]).catch((error) => {
     botState.status = 'error';
     botState.statusMessage = error.code === 4004 ? 'Invalid token' : error.message;
     client.destroy();
