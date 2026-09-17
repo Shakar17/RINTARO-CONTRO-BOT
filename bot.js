@@ -380,6 +380,10 @@ function attachBot(bot) {
   const botState = { ...bot, client, status: bot.status };
   bots.push(botState);
 
+  client.on('error', (error) => {
+    addLog('error', `Bot ${bot.number} Discord client error: ${error.message}.`);
+  });
+
   client.once('ready', (readyClient) => {
     botState.status = 'online';
     botState.statusMessage = 'Connected to Discord';
@@ -407,9 +411,13 @@ function attachBot(bot) {
     }
   });
 
-  client.login(bot.token).catch((error) => {
+  const loginTimeout = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Discord login timed out after 30 seconds. Check Render outbound network access.')), 30_000);
+  });
+  Promise.race([client.login(bot.token.trim()), loginTimeout]).catch((error) => {
     botState.status = 'error';
     botState.statusMessage = error.code === 4004 ? 'Invalid token' : error.message;
+    client.destroy();
     addLog('error', `Bot ${bot.number} login failed: ${botState.statusMessage}.`);
   });
 }
