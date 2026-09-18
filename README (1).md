@@ -42,6 +42,21 @@ The dashboard is available at the deployed service URL. Open it and log in with 
 
 The included `render.yaml` contains the same Web Service configuration for Blueprint deploys.
 
+## Gateway startup and diagnostics
+
+The web server starts before Discord connections. Each configured bot owns one discord.js client and starts independently, with a three-second stagger between initial Gateway IDENTIFY attempts. discord.js remains responsible for Gateway URL discovery, heartbeats, resume, and normal reconnects. Only failed initial connections are retried by the application, using exponential backoff with jitter capped at five minutes.
+
+Gateway login has a 90-second connection deadline. Logs classify DNS, TCP, TLS, WebSocket handshake, timeout, invalid-token, invalid-intent, and Discord rate/session-start failures. Tokens are read only from `DISCORD_TOKEN_1` through `DISCORD_TOKEN_5` and are never included in logs or dashboard responses. The runtime prefers IPv4 first for Render compatibility; it does not use the HTTP `PORT` for Discord Gateway connections.
+
+Render settings:
+
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Required environment variable names: `DISCORD_TOKEN_1`, `DISCORD_TOKEN_2`, `DISCORD_TOKEN_3`, `DISCORD_TOKEN_4`, `DISCORD_TOKEN_5`, `WEB_ADMIN_KEY`
+- Optional environment variable name: `GUILD_ID`
+
+After deployment, healthy logs include `Web dashboard listening on port ...`, `gateway connection attempt ...`, `connection established`, and `READY received ...` for each bot. A temporary network failure should instead show its classified failure followed by `reconnect attempt ... scheduled in ...s`; it should not reconnect in a tight loop.
+
 ## Invite the bot
 
 In the Developer Portal, create an OAuth2 invite URL with these scopes:
