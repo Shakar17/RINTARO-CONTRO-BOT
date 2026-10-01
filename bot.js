@@ -39,8 +39,8 @@ function addLog(level, message) {
 function configuredBots() {
   return Array.from({ length: 5 }, (_, index) => ({
     number: index + 1,
-    token: process.env[`DISCORD_TOKEN_${index + 1}`],
-    status: process.env[`DISCORD_TOKEN_${index + 1}`] && !process.env[`DISCORD_TOKEN_${index + 1}`].startsWith('replace-with-') ? 'starting' : 'missing-token',
+    token: process.env[`DISCORD_TOKEN_${index + 1}`]?.trim(),
+    status: process.env[`DISCORD_TOKEN_${index + 1}`]?.trim() && !process.env[`DISCORD_TOKEN_${index + 1}`].trim().startsWith('replace-with-') ? 'starting' : 'missing-token',
   }));
 }
 
@@ -351,6 +351,25 @@ function attachBot(bot) {
     botState.statusMessage = 'Connected to Discord';
     botState.tag = readyClient.user.tag;
     addLog('info', `Bot ${bot.number} login successful as ${readyClient.user.tag}. Servers: ${readyClient.guilds.cache.size}.`);
+  });
+
+  client.on('error', (error) => {
+    addLog('error', `Bot ${bot.number} Discord client error${error.code ? ` (${error.code})` : ''}: ${error.message}.`);
+  });
+  client.on('shardError', (error, shardId) => {
+    addLog('error', `Bot ${bot.number} Discord gateway error on shard ${shardId}${error.code ? ` (${error.code})` : ''}: ${error.message}.`);
+  });
+  client.on('shardDisconnect', (event, shardId) => {
+    if (botState.status === 'online') {
+      botState.status = 'disconnected';
+      botState.statusMessage = `Discord gateway disconnected (code ${event.code}).`;
+    }
+    addLog('error', `Bot ${bot.number} Discord gateway disconnected on shard ${shardId} with code ${event.code}${event.reason ? `: ${event.reason}` : ''}.`);
+  });
+  client.on('shardReady', (shardId) => {
+    botState.status = 'online';
+    botState.statusMessage = 'Connected to Discord';
+    addLog('info', `Bot ${bot.number} Discord gateway ready on shard ${shardId}.`);
   });
 
   client.on('voiceStateUpdate', (oldState, newState) => {
